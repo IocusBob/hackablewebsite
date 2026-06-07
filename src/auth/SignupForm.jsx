@@ -2,7 +2,7 @@ import { useState } from 'react'
 import AuthCard from './AuthCard.jsx'
 import FormField from './FormField.jsx'
 
-export default function SignupForm({ onSwitch }) {
+export default function SignupForm({ onSwitch, onSuccess }) {
   const [formState, setFormState] = useState({ email: '', username: '', password: '', confirmPassword: '' })
   const [message, setMessage] = useState('Create a new account to access the hackable site.')
   const [status, setStatus] = useState('info')
@@ -12,7 +12,7 @@ export default function SignupForm({ onSwitch }) {
     setFormState((current) => ({ ...current, [name]: value }))
   }
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
 
     if (!formState.email || !formState.username || !formState.password || !formState.confirmPassword) {
@@ -27,8 +27,56 @@ export default function SignupForm({ onSwitch }) {
       return
     }
 
-    setStatus('success')
-    setMessage('Signup submitted. This is a demo form, so no account is actually created.')
+    try {
+      const registerResponse = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formState.email,
+          username: formState.username,
+          password: formState.password,
+        }),
+      })
+
+      const registerData = await registerResponse.json()
+
+      if (!registerResponse.ok) {
+        setStatus('error')
+        setMessage(registerData.message || 'Signup failed. Please try again.')
+        return
+      }
+
+      const loginResponse = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formState.email,
+          username: formState.username,
+          password: formState.password,
+        }),
+      })
+
+      const loginData = await loginResponse.json()
+
+      if (!loginResponse.ok) {
+        setStatus('error')
+        setMessage(loginData.message || 'Signup succeeded but login failed.')
+        return
+      }
+
+      localStorage.setItem('authToken', loginData.token)
+      setStatus('success')
+      setMessage('Signup successful! Redirecting...')
+      onSuccess?.()
+    } catch (error) {
+      console.error(error)
+      setStatus('error')
+      setMessage('Network error. Please try again.')
+    }
   }
 
   return (

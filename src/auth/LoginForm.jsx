@@ -2,8 +2,8 @@ import { useState } from 'react'
 import AuthCard from './AuthCard.jsx'
 import FormField from './FormField.jsx'
 
-export default function LoginForm({ onSwitch }) {
-  const [formState, setFormState] = useState({ username: '', password: '' })
+export default function LoginForm({ onSwitch, onSuccess }) {
+  const [formState, setFormState] = useState({ email: '', password: '' })
   const [message, setMessage] = useState('Use your credentials to sign in.')
   const [status, setStatus] = useState('info')
 
@@ -12,23 +12,50 @@ export default function LoginForm({ onSwitch }) {
     setFormState((current) => ({ ...current, [name]: value }))
   }
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
 
-    if (!formState.username || !formState.password) {
+    if (!formState.email || !formState.password) {
       setStatus('error')
-      setMessage('Please enter both username and password.')
+      setMessage('Please enter both email and password.')
       return
     }
 
-    setStatus('success')
-    setMessage('Login submitted successfully. This is a demo authentication form.')
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formState.email,
+          password: formState.password,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setStatus('error')
+        setMessage(data.message || 'Login failed. Please check your credentials.')
+        return
+      }
+
+      localStorage.setItem('authToken', data.token)
+      setStatus('success')
+      setMessage('Login successful! Redirecting...')
+      onSuccess?.()
+    } catch (error) {
+      console.error(error)
+      setStatus('error')
+      setMessage('Network error. Please try again.')
+    }
   }
 
   return (
     <AuthCard
       title="Login"
-      description="Sign in to your account with a username and password."
+      description="Sign in to your account with your email and password."
       footer={
         <div className="auth-switch">
           <span>New to the site?</span>
@@ -40,12 +67,13 @@ export default function LoginForm({ onSwitch }) {
     >
       <form className="auth-form" onSubmit={handleSubmit}>
         <FormField
-          label="Username"
-          name="username"
-          value={formState.username}
+          label="Email"
+          type="email"
+          name="email"
+          value={formState.email}
           onChange={handleChange}
-          placeholder="Enter username"
-          autoComplete="username"
+          placeholder="Enter email"
+          autoComplete="email"
         />
         <FormField
           label="Password"
