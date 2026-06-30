@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import AuthCard from './AuthCard.jsx'
 import FormField from './FormField.jsx'
-
+// THIS IS A TEST
 export default function LoginForm({ onSwitch, onSuccess }) {
   const [formState, setFormState] = useState({ email: '', password: '' })
   const [message, setMessage] = useState('Use your credentials to sign in.')

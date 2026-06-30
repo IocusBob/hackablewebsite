@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import AuthCard from './AuthCard.jsx'
 import FormField from './FormField.jsx'
-
+// THIS IS A TEST PART 2
 export default function SignupForm({ onSwitch, onSuccess }) {
   const [formState, setFormState] = useState({ email: '', username: '', password: '', confirmPassword: '' })
   const [message, setMessage] = useState('Create a new account to access the hackable site.')
