@@ -28,7 +28,7 @@ export default function SignupForm({ onSwitch, onSuccess }) {
     }
 
     try {
-      const registerResponse = await fetch('http://localhost:5000/api/auth/register', {
+      const registerResponse = await fetch('http://localhost:5001/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -48,7 +48,7 @@ export default function SignupForm({ onSwitch, onSuccess }) {
         return
       }
 
-      const loginResponse = await fetch('http://localhost:5000/api/auth/login', {
+      const loginResponse = await fetch('http://localhost:5001/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
